@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Sales.API.Data;
 using Sales.Shared.Entities;
 using System.Runtime.CompilerServices;
@@ -18,9 +19,21 @@ namespace Sales.API.Controllers
 
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> GetAsync()
         {
-            return Ok(_context.Countries.ToList());
+            return Ok(await _context.Countries.ToListAsync());
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetAsync(int id)
+        {
+            var country = await _context.Countries.FirstOrDefaultAsync(x=>x.Id==id);
+            if(country == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(country);
         }
 
         [HttpPost]
@@ -30,5 +43,27 @@ namespace Sales.API.Controllers
             await _context.SaveChangesAsync();
             return Ok(country);
         }
+
+        [HttpPut]
+        public async Task<ActionResult> PutAsync(Country country)
+        {
+            _context.Update(country);
+            await _context.SaveChangesAsync();
+            return Ok(country);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            var country = await _context.Countries.FirstOrDefaultAsync(x => x.Id == id);
+            if (country == null)
+            {
+                return NotFound();
+            }
+            _context.Remove(country);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
     }
 }
